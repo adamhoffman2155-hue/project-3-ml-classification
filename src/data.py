@@ -176,17 +176,54 @@ class DataPreprocessor:
     """
     
     def __init__(self):
-        self.scaler = None
-        self.feature_selector = None
-    
+        self.means_ = None
+        self.stds_ = None
+        self.is_fitted_ = False
+
     def fit(self, X, y=None):
-        """Fit preprocessor on training data."""
-        pass
-    
+        """
+        Fit preprocessor on training data by computing feature means and stds.
+
+        Parameters
+        ----------
+        X : np.ndarray or pd.DataFrame
+            Feature matrix of shape (n_samples, n_features)
+        y : ignored
+
+        Returns
+        -------
+        self
+        """
+        if isinstance(X, pd.DataFrame):
+            X = X.values
+        self.means_ = np.nanmean(X, axis=0)
+        self.stds_ = np.nanstd(X, axis=0)
+        # Avoid division by zero: replace zero stds with 1.0
+        self.stds_[self.stds_ == 0] = 1.0
+        self.is_fitted_ = True
+        return self
+
     def transform(self, X):
-        """Transform data using fitted preprocessor."""
-        pass
-    
+        """
+        Transform data using stored means and stds (standard scaling).
+
+        Parameters
+        ----------
+        X : np.ndarray or pd.DataFrame
+            Feature matrix of shape (n_samples, n_features)
+
+        Returns
+        -------
+        X_scaled : np.ndarray
+            Scaled feature matrix
+        """
+        if not self.is_fitted_:
+            raise RuntimeError("DataPreprocessor has not been fitted. Call fit() first.")
+        if isinstance(X, pd.DataFrame):
+            X = X.values
+        X_scaled = (X - self.means_) / self.stds_
+        return X_scaled
+
     def fit_transform(self, X, y=None):
         """Fit and transform in one step."""
         self.fit(X, y)
