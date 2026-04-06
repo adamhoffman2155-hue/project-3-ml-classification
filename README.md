@@ -32,42 +32,26 @@ The pipeline explores which genomic features correlate with drug sensitivity, wi
 
 ```
 project-3-ml-classification/
+├── README.md
 ├── Dockerfile
 ├── environment.yml
 ├── requirements.txt
-├── notebooks/
-│   ├── 01_data_exploration.ipynb
-│   ├── 02_feature_engineering.ipynb
-│   ├── 03_classical_ml.ipynb
-│   ├── 04_deep_learning.ipynb
-│   ├── 05_model_evaluation.ipynb
-│   ├── 06_hyperparameter_tuning.ipynb
-│   └── 07_model_comparison.ipynb
+├── config/
+│   └── model_config.yaml
 ├── src/
+│   ├── __init__.py
+│   ├── config.py
 │   ├── data.py
+│   ├── evaluation.py
 │   ├── features.py
 │   ├── models.py
 │   ├── neural_net.py
-│   ├── evaluation.py
-│   ├── utils.py
-│   └── config.py
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   └── metadata/
-├── models/
-│   ├── trained/
-│   └── predictions/
-├── results/
-│   ├── metrics/
-│   ├── plots/
-│   └── reports/
-├── tests/
-│   ├── test_data.py
-│   ├── test_features.py
-│   └── test_models.py
-└── config/
-    └── model_config.yaml
+│   └── utils.py
+└── tests/
+    ├── __init__.py
+    ├── test_data.py
+    ├── test_features.py
+    └── test_models.py
 ```
 
 ## Quick Start
@@ -83,8 +67,6 @@ docker run -it -v $(pwd):/workspace ml-classification bash
 # Or Conda
 conda env create -f environment.yml
 conda activate ml-classification
-
-jupyter lab
 ```
 
 ## My Role
