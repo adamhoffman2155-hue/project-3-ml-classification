@@ -24,28 +24,24 @@ RUN conda install -c conda-forge -y \
     matplotlib=3.7.2 \
     seaborn=0.12.2 \
     plotly=5.16.1 \
-    jupyter=1.0.0 \
-    jupyterlab=4.0.4 \
-    ipywidgets=8.0.7 \
     pyyaml=6.0 \
     tqdm=4.65.0 \
     joblib=1.3.1 \
+    pytest=7.4.0 \
     && conda clean --all --yes
 
 # Copy project files
 COPY src/ src/
-COPY notebooks/ notebooks/
 COPY config/ config/
+COPY tests/ tests/
 COPY requirements.txt .
 
-# Install additional pip packages if needed
-RUN pip install --no-cache-dir -r requirements.txt || true
+# Install additional pip packages
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Create data directories
-RUN mkdir -p data/{raw,processed,metadata} models/{trained,predictions} results/{metrics,plots,reports} tests
-
-# Expose Jupyter port
-EXPOSE 8888
+# Create output directories
+RUN mkdir -p data/{raw,processed,metadata} models/{trained,predictions} results/{metrics,plots,reports}
 
 # Set entrypoint
-ENTRYPOINT ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root", "--no-browser"]
+ENTRYPOINT ["python"]
+CMD ["-m", "pytest", "tests/", "-v"]
