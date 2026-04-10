@@ -1,0 +1,48 @@
+GDSC Olaparib sensitivity - Proof of Concept
+============================================================
+
+Scientific question:
+  Can mutation features predict Olaparib sensitivity across
+  cancer cell lines?
+
+Data:
+  mutation matrix: GDSC binary mutation matrix
+  cell lines with Olaparib IC50 + mutation profile: 432
+  class balance: sensitive=216 / resistant=216
+  panel genes used: 39 (DDR + HRD + pan-cancer drivers)
+  panel genes missing: ['CHEK1', 'RAD51', 'RAD51C', 'RAD51D', 'FANCI', 'FANCL', 'FANCM', 'MRE11A', 'XRCC2', 'XRCC3']
+
+Labelling:
+  sensitive = IC50 in bottom 25%
+  resistant = IC50 in top 25%
+  middle 50% dropped to sharpen the signal
+
+Cross-validation AUCs (5-fold stratified):
+  LogisticRegression 0.5949 +/- 0.0894
+  RandomForest       0.5623 +/- 0.0750
+  GradientBoosting   0.5785 +/- 0.0882
+
+Best model: LogisticRegression
+
+Top 10 SHAP features (|SHAP| mean):
+  TP53       0.3683
+  RB1        0.2901
+  MSH2       0.2804
+  FANCA      0.2198
+  BRAF       0.2012
+  MYC        0.1991
+  KRAS       0.1916
+  FANCC      0.1884
+  RAD51B     0.1593
+  MSH6       0.1486
+
+Honest assessment:
+  Best CV AUC = 0.595 < 0.60. WEAK signal.
+  Consistent with the literature: individual mutation markers (even BRCA1/2) are weak Olaparib predictors in cancer cell lines. HRD scores and transcriptomic features typically outperform mutation-only features.
+
+Caveats:
+  * Small sample (~400 cell lines after top/bottom 25% filtering).
+  * Class definition by quantile is arbitrary vs. clinical cut-offs.
+  * Mutation-only features ignore CNA, methylation, and expression.
+  * Pan-cancer: not stratified by tissue.
+  * Original Sanger hosts (cog.sanger.ac.uk) were unreachable from this sandbox; GDSC-derived mutation/IC50 files from the DeepCCDS mirror on GitHub were used instead (see script docstring).
