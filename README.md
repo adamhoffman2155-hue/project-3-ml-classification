@@ -47,11 +47,16 @@ project-3-ml-classification/
 │   ├── models.py
 │   ├── neural_net.py
 │   └── utils.py
-└── tests/
-    ├── __init__.py
-    ├── test_data.py
-    ├── test_features.py
-    └── test_models.py
+├── scripts/
+│   └── poc/
+│       └── run_poc.py
+├── tests/
+│   ├── __init__.py
+│   ├── test_data.py
+│   ├── test_features.py
+│   └── test_models.py
+└── results/
+    └── poc/
 ```
 
 ## Quick Start
@@ -68,6 +73,59 @@ docker run -it -v $(pwd):/workspace ml-classification bash
 conda env create -f environment.yml
 conda activate ml-classification
 ```
+
+## Proof of Concept
+
+A minimal end-to-end ML run on GDSC-derived cell line data, predicting binarized drug sensitivity from mutation features.
+
+**Dataset:** GDSC binary mutation matrix + IC50 values (878 cell lines × 534 genes), accessed via a published GitHub mirror (`hanjunwei-lab/DeepCCDS`) which re-distributes the Sanger CancerRxGene data. The original `cog.sanger.ac.uk` release-8.5 endpoints were unreachable from the reproducibility sandbox.
+
+**Task:** Binarize Olaparib (PARP inhibitor) IC50 into sensitive (bottom 25%) vs resistant (top 25%) classes, drop the middle 50%, then predict class from a 39-gene mutation panel (DDR + HRD + pan-cancer drivers) using stratified 5-fold CV.
+
+**Reproduce:**
+```bash
+pip install pandas numpy scikit-learn shap matplotlib
+python scripts/poc/run_poc.py
+```
+
+**Results (actual 5-fold CV AUCs):**
+
+| Model | Mean AUC | Std |
+|---|---|---|
+| LogisticRegression | **0.5949** | 0.0894 |
+| GradientBoosting | 0.5785 | 0.0882 |
+| RandomForest | 0.5623 | 0.0750 |
+
+| Cohort | Value |
+|---|---|
+| N cell lines after filtering | 432 |
+| Class balance | 216 sensitive / 216 resistant |
+| Panel genes available | 39 of 49 |
+
+**Top 10 SHAP features (Logistic Regression, best model):**
+
+| Feature | mean \|SHAP\| |
+|---|---|
+| TP53 | 0.368 |
+| RB1 | 0.290 |
+| MSH2 | 0.280 |
+| FANCA | 0.220 |
+| BRAF | 0.201 |
+| MYC | 0.199 |
+| KRAS | 0.192 |
+| FANCC | 0.188 |
+| RAD51B | 0.159 |
+| MSH6 | 0.149 |
+
+**Honest assessment:** Best CV AUC = **0.595** — a **weak** signal. This is consistent with published literature: individual mutation markers (including BRCA1/2) are weak Olaparib predictors in cancer cell lines. HRD scar scores and transcriptomic features typically outperform mutation-only features. The SHAP ranking does show DDR/MMR genes (MSH2, FANCA, FANCC, RAD51B, MSH6) in the top 10 alongside pan-cancer drivers (TP53, RB1, KRAS, MYC), which is the expected biology.
+
+**Limits:**
+- Small effective sample (~432 cell lines after top/bottom quartile filtering)
+- Binarization by quartile is arbitrary vs. clinical cut-offs
+- Mutation-only features ignore copy number, methylation, and expression
+- Pan-cancer pooled — not stratified by tissue type
+- BRCA1/BRCA2 are present in the panel but not in the top 10 SHAP list, which is consistent with published findings that they are weak cell-line predictors without additional HRD-scar evidence
+- The original `cog.sanger.ac.uk` release 8.5 files are unreachable from the sandbox; the POC uses a published GDSC-derived mirror on GitHub (documented in the script docstring)
 
 ## My Role
 
