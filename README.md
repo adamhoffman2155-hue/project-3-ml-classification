@@ -4,6 +4,16 @@
 
 This is the third project in a [computational biology portfolio](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio). After Projects 1–2 identified transcriptomic and immune signatures in GEA, this project asks whether those genomic features can actually predict drug response — moving from descriptive biology to predictive modeling using the GDSC2 pharmacogenomics dataset.
 
+## At a Glance
+
+| | |
+|---|---|
+| **Stack** | scikit-learn (RF · XGBoost · ElasticNet) · SHAP · stratified 5-fold CV · Docker |
+| **Data** | GDSC2 IC50 + genomic feature matrices (public) |
+| **POC headline** | Random Forest CV AUC 0.71 on Olaparib (+12 pts over 39-gene baseline); quantitative null result for DDR gene ranking |
+| **Role** | Dataset & DDR framing from thesis; biology review of SHAP outputs; implementation AI-assisted |
+| **Portfolio** | Project 3 of 7 · [full narrative](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio) |
+
 ## What It Does
 
 Benchmarks multiple ML models on GDSC2 cell line data to predict IC50 drug sensitivity from genomic features:
