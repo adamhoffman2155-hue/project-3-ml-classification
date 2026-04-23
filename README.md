@@ -2,31 +2,32 @@
 
 **Research question:** Can genomic features predict drug sensitivity across cancer cell lines?
 
-This is the third project in a [computational biology portfolio](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio). After Projects 1–2 identified transcriptomic and immune signatures in GEA, this project asks whether those genomic features can actually predict drug response — moving from descriptive biology to predictive modeling using the GDSC2 pharmacogenomics dataset.
+This is the third project in a [computational biology portfolio](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio). After Projects 1–2 identified transcriptomic and immune signatures in GEA, this project asks whether those genomic features can actually predict drug response — moving from descriptive biology to predictive modeling framed around the GDSC2 pharmacogenomics dataset.
 
 ## What It Does
 
-Benchmarks multiple ML models on GDSC2 cell line data to predict IC50 drug sensitivity from genomic features:
+A reusable classical-ML + neural-net benchmarking harness for binarised drug-response prediction from genomic feature matrices:
 
-1. **Data loading** — GDSC2 IC50 values + genomic feature matrices
-2. **Feature engineering** — Mutation profiles, copy number, pathway scores
-3. **Model training** — Random Forest, XGBoost, ElasticNet with stratified 5-fold CV
-4. **Feature inspection** — SHAP values for model interpretability
-5. **Evaluation** — ROC-AUC, precision-recall, confusion matrices
-6. **Model comparison** — Benchmark across all approaches
+1. **Data loading / cleaning** (`src/data.py`) — generic CSV feature + label loader, missing-value imputation, constant / highly-correlated feature removal, `DataPreprocessor` (standard scaling)
+2. **Feature engineering** (`src/features.py`) — mutation profile / CNV / pathway-score transformations
+3. **Classical models** (`src/models.py`) — Random Forest, XGBoost, ElasticNet with stratified 5-fold CV
+4. **Deep-learning baseline** (`src/neural_net.py`) — feed-forward network
+5. **Evaluation** (`src/evaluation.py`) — ROC-AUC, precision-recall, confusion matrices, SHAP-based feature importance
 
-The pipeline explores which genomic features correlate with drug sensitivity, with particular focus on BRCA-pathway drugs relevant to the DDR biology from my thesis.
+Data and labels are passed in as CSVs — the loader is dataset-agnostic. The project is framed around GDSC2 IC50 endpoints (with a focus on BRCA-pathway drugs relevant to the DDR biology from my thesis), but the actual harness runs on whatever feature / label CSVs are supplied.
 
 ## Methods & Tools
 
 | Category | Tools |
 |----------|-------|
-| ML Models | Random Forest, XGBoost, ElasticNet (scikit-learn) |
+| Classical ML | Random Forest, XGBoost, ElasticNet (scikit-learn) |
+| Deep learning | Feed-forward neural net |
 | Interpretability | SHAP |
 | Validation | Stratified 5-fold cross-validation |
-| Data | GDSC2 pharmacogenomics |
+| Intended data | GDSC2 pharmacogenomics (IC50 + genomic features) |
 | Visualization | matplotlib, seaborn |
-| Environment | Docker, Conda |
+| Testing | pytest (`test_data.py`, `test_features.py`, `test_models.py`) |
+| Environment | Docker, Conda, pip |
 
 ## Project Structure
 
@@ -35,40 +36,24 @@ project-3-ml-classification/
 ├── Dockerfile
 ├── environment.yml
 ├── requirements.txt
-├── notebooks/
-│   ├── 01_data_exploration.ipynb
-│   ├── 02_feature_engineering.ipynb
-│   ├── 03_classical_ml.ipynb
-│   ├── 04_deep_learning.ipynb
-│   ├── 05_model_evaluation.ipynb
-│   ├── 06_hyperparameter_tuning.ipynb
-│   └── 07_model_comparison.ipynb
+├── config/
+│   └── model_config.yaml
 ├── src/
-│   ├── data.py
-│   ├── features.py
-│   ├── models.py
-│   ├── neural_net.py
-│   ├── evaluation.py
-│   ├── utils.py
-│   └── config.py
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   └── metadata/
-├── models/
-│   ├── trained/
-│   └── predictions/
-├── results/
-│   ├── metrics/
-│   ├── plots/
-│   └── reports/
-├── tests/
-│   ├── test_data.py
-│   ├── test_features.py
-│   └── test_models.py
-└── config/
-    └── model_config.yaml
+│   ├── __init__.py
+│   ├── config.py
+│   ├── data.py              # Generic CSV loader + DataPreprocessor
+│   ├── features.py          # Feature engineering transforms
+│   ├── models.py            # RF / XGBoost / ElasticNet
+│   ├── neural_net.py        # FFN baseline
+│   ├── evaluation.py        # CV, metrics, SHAP
+│   └── utils.py
+└── tests/
+    ├── test_data.py
+    ├── test_features.py
+    └── test_models.py
 ```
+
+Trained model artefacts, predictions, metrics, and plots are written under `data/`, `models/`, and `results/` at runtime and are gitignored.
 
 ## Quick Start
 
@@ -76,15 +61,14 @@ project-3-ml-classification/
 git clone https://github.com/adamhoffman2155-hue/project-3-ml-classification.git
 cd project-3-ml-classification
 
-# Using Docker
-docker build -t ml-classification .
-docker run -it -v $(pwd):/workspace ml-classification bash
+# Choose one environment
+docker build -t ml-classification . && docker run -it -v $(pwd):/workspace ml-classification bash
+#   or
+conda env create -f environment.yml && conda activate ml-classification
+#   or
+pip install -r requirements.txt
 
-# Or Conda
-conda env create -f environment.yml
-conda activate ml-classification
-
-jupyter lab
+pytest
 ```
 
 ## My Role
@@ -93,7 +77,7 @@ I chose the GDSC2 dataset and DDR/biomarker framing based on my thesis work, and
 
 ## Context in the Portfolio
 
-This is **Project 3 of 7**. It marks the transition from descriptive transcriptomics (Projects 1–2) to predictive modeling — asking whether the biology I identified can actually predict drug response. The pharmacogenomics approach here is extended in Project 4 with DDR-specific biomarkers. See the [portfolio site](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio) for the full narrative.
+This is **Project 3 of 7**. It marks the transition from descriptive transcriptomics (Projects 1–2) to predictive modeling — asking whether the biology I identified can actually predict drug response. The pharmacogenomics approach here is extended in Project 4 with DDR-specific biomarkers (where the GDSC2 data is actually loaded and benchmarked). See the [portfolio site](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio) for the full narrative.
 
 ## License
 
