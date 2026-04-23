@@ -6,14 +6,13 @@ This is the third project in a [computational biology portfolio](https://github.
 
 ## What It Does
 
-Benchmarks multiple ML models on GDSC2 cell line data to predict IC50 drug sensitivity from genomic features:
+Benchmarks multiple ML models on GDSC2 cell-line data to predict IC50 drug sensitivity from genomic features:
 
-1. **Data loading** — GDSC2 IC50 values + genomic feature matrices
-2. **Feature engineering** — Mutation profiles, copy number, pathway scores
-3. **Model training** — Random Forest, XGBoost, ElasticNet with stratified 5-fold CV
-4. **Feature inspection** — SHAP values for model interpretability
-5. **Evaluation** — ROC-AUC, precision-recall, confusion matrices
-6. **Model comparison** — Benchmark across all approaches
+1. **Data loading** — GDSC2 IC50 values + genomic feature matrices (`src/data.py`)
+2. **Feature engineering** — Mutation profiles, copy number, pathway scores (`src/features.py`)
+3. **Model training** — Random Forest, XGBoost, ElasticNet with stratified 5-fold CV (`src/models.py`)
+4. **Deep learning baseline** — Feed-forward network (`src/neural_net.py`)
+5. **Evaluation** — ROC-AUC, precision-recall, confusion matrices, SHAP interpretability (`src/evaluation.py`)
 
 The pipeline explores which genomic features correlate with drug sensitivity, with particular focus on BRCA-pathway drugs relevant to the DDR biology from my thesis.
 
@@ -21,11 +20,13 @@ The pipeline explores which genomic features correlate with drug sensitivity, wi
 
 | Category | Tools |
 |----------|-------|
-| ML Models | Random Forest, XGBoost, ElasticNet (scikit-learn) |
+| Classical ML | Random Forest, XGBoost, ElasticNet (scikit-learn) |
+| Deep learning | Feed-forward neural net |
 | Interpretability | SHAP |
 | Validation | Stratified 5-fold cross-validation |
 | Data | GDSC2 pharmacogenomics |
 | Visualization | matplotlib, seaborn |
+| Testing | pytest |
 | Environment | Docker, Conda |
 
 ## Project Structure
@@ -35,40 +36,21 @@ project-3-ml-classification/
 ├── Dockerfile
 ├── environment.yml
 ├── requirements.txt
-├── notebooks/
-│   ├── 01_data_exploration.ipynb
-│   ├── 02_feature_engineering.ipynb
-│   ├── 03_classical_ml.ipynb
-│   ├── 04_deep_learning.ipynb
-│   ├── 05_model_evaluation.ipynb
-│   ├── 06_hyperparameter_tuning.ipynb
-│   └── 07_model_comparison.ipynb
+├── config/
+│   └── model_config.yaml
 ├── src/
-│   ├── data.py
-│   ├── features.py
-│   ├── models.py
-│   ├── neural_net.py
-│   ├── evaluation.py
-│   ├── utils.py
-│   └── config.py
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   └── metadata/
-├── models/
-│   ├── trained/
-│   └── predictions/
-├── results/
-│   ├── metrics/
-│   ├── plots/
-│   └── reports/
-├── tests/
-│   ├── test_data.py
-│   ├── test_features.py
-│   └── test_models.py
-└── config/
-    └── model_config.yaml
+│   ├── __init__.py
+│   ├── config.py
+│   ├── data.py              # GDSC2 loaders
+│   ├── features.py          # Feature engineering
+│   ├── models.py            # RF / XGBoost / ElasticNet
+│   ├── neural_net.py        # FFN baseline
+│   ├── evaluation.py        # CV, metrics, SHAP
+│   └── utils.py
+└── tests/                   # pytest suite
 ```
+
+Trained model artefacts, predictions, metrics, and plots are written under `data/`, `models/`, and `results/` at runtime and are gitignored.
 
 ## Quick Start
 
@@ -80,11 +62,12 @@ cd project-3-ml-classification
 docker build -t ml-classification .
 docker run -it -v $(pwd):/workspace ml-classification bash
 
-# Or Conda
+# Or Conda / pip
 conda env create -f environment.yml
 conda activate ml-classification
+# or: pip install -r requirements.txt
 
-jupyter lab
+pytest
 ```
 
 ## My Role
