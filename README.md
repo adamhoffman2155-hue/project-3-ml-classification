@@ -1,8 +1,20 @@
 # Project 3: ML Drug Response Prediction (GDSC)
 
-**Research question:** Can genomic features predict drug sensitivity across cancer cell lines?
+> **A machine-learning model that tries to predict which cancer cell lines respond to a cancer drug — from their DNA alone — and honestly reports where that approach breaks down.**
 
-This is the third project in a [computational biology portfolio](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio). After Projects 1–2 identified transcriptomic and immune signatures in GEA, this project asks whether those genomic features can actually predict drug response — moving from descriptive biology to predictive modeling using the GDSC pharmacogenomics dataset.
+## The short version
+
+**What this project does.** Trains three machine-learning models on 424 cancer cell lines to predict whether each one is sensitive or resistant to Olaparib (a targeted PARP inhibitor). Then quantitatively tests a specific hypothesis: that DNA-repair gene mutations are the feature that drives the prediction.
+
+**The question behind it.** Olaparib is supposed to work best in tumors with DNA-repair defects. If that story holds up in cell lines, mutations in genes like BRCA1, BRCA2, and ATM should be the top features the model uses. Does the story hold?
+
+**What the proof-of-concept shows.** The best model (Random Forest on 704 features) reaches **71% accuracy** (ROC-AUC 0.711 ± 0.085) at separating sensitive vs. resistant cell lines. **But** a direct statistical test shows the DNA-repair genes we'd expect to matter rank at median **position 400 out of 704** (Mann-Whitney p = 0.844) — they don't carry the signal. What actually does: tissue type and copy-number patterns.
+
+**Why it matters.** This is a useful negative result. It agrees with published studies showing that mutation-only panels don't predict PARP-inhibitor response well in cell lines — you need transcriptomic data or HRD-scar scores. Showing where a hypothesis fails, with the numbers to back it, is as important as showing where it succeeds.
+
+---
+
+_The rest of this README is technical detail for bioinformaticians, recruiters doing a deep review, or anyone reproducing the work._
 
 ## At a Glance
 
@@ -26,8 +38,6 @@ Benchmarks multiple ML models on GDSC cell-line data to predict Olaparib IC50 se
 5. **Feature inspection** — SHAP values on best model for interpretability
 6. **DDR-enrichment test** — Mann-Whitney U of DDR-gene feature ranks vs. background
 
-The pipeline explores which genomic features correlate with Olaparib sensitivity, with particular focus on whether DDR-panel gene mutations carry the signal (spoiler: they don't — tissue context and copy-number segments dominate).
-
 ## Methods & Tools
 
 | Category | Tools |
@@ -38,27 +48,6 @@ The pipeline explores which genomic features correlate with Olaparib sensitivity
 | Data | GDSC v17 bundled in `gdsctools` PyPI package |
 | Visualization | matplotlib, seaborn |
 | Environment | Docker, Conda |
-
-## Project Structure
-
-```
-project-3-ml-classification/
-├── README.md
-├── Dockerfile
-├── environment.yml
-├── requirements.txt
-├── config/
-│   └── model_config.yaml
-├── src/
-│   ├── config.py, data.py, features.py, models.py, evaluation.py, utils.py
-├── scripts/
-│   └── poc/
-│       └── run_poc.py         # v2 POC: full 704-feature model + DDR enrichment
-├── tests/
-│   ├── test_data.py, test_features.py, test_models.py
-└── results/
-    └── poc/                   # committed run outputs
-```
 
 ## Quick Start
 
@@ -78,12 +67,7 @@ Full-feature GDSC Olaparib benchmark on cell-line data, with a quantitative test
 
 **Feature matrix (after top/bottom-quartile IC50 filter):**
 - 424 cell lines · 212 sensitive / 212 resistant (balanced)
-- 704 features:
-  - 270 mutation indicators (Hugo symbols)
-  - 116 copy-number gain segments
-  - 291 copy-number loss segments
-  - TISSUE_FACTOR one-hot dummies
-  - MSI_FACTOR binary
+- 704 features: 270 mutation indicators + 116 copy-number gains + 291 copy-number losses + TISSUE_FACTOR dummies + MSI_FACTOR binary
 
 ### Cross-validation ROC-AUC (5-fold stratified)
 
@@ -93,9 +77,7 @@ Full-feature GDSC Olaparib benchmark on cell-line data, with a quantitative test
 | GradientBoosting | 0.6879 | 0.0819 |
 | LogisticRegression | 0.6207 | 0.0458 |
 
-Best model: **Random Forest, AUC 0.711 ± 0.085**.
-
-### Top 15 SHAP features (Random Forest)
+### Top 5 SHAP features (Random Forest)
 
 Dominated by **tissue context and copy-number segments**, not DDR mutations:
 
@@ -106,30 +88,15 @@ Dominated by **tissue context and copy-number segments**, not DDR mutations:
 | 3 | TISSUE_FACTOR_lung_NSCLC | 0.0092 |
 | 4 | TISSUE_FACTOR_lymphoma | 0.0076 |
 | 5 | TISSUE_FACTOR_breast | 0.0055 |
-| … | copy-number segments, TP53_mut | … |
 
 ### DDR-panel enrichment test (Mann-Whitney U)
-
-Tests whether DDR-panel gene mutations rank higher (by mean |SHAP|) than background features:
 
 | Metric | Value |
 |---|---|
 | DDR panel size | 26 genes queried |
-| Present in v17 matrix | 7 / 26 (BRCA1, BRCA2, ATM, ATR, CHEK2, MLH1, MLH3) |
+| Present in v17 matrix | 7 / 26 |
 | DDR median rank (1 = top) | **400 / 704** |
 | MWU one-sided p (DDR > bg) | **p = 0.844** |
-
-| DDR feature | mean \|SHAP\| | Rank |
-|---|---|---|
-| BRCA2_mut | 0.0006 | 112 |
-| ATM_mut | 0.0003 | 180 |
-| CHEK2_mut | 0.0000 | 392 |
-| MLH3_mut | 0.0000 | 400 |
-| MLH1_mut | 0.0000 | 401 |
-| ATR_mut | 0.0000 | 456 |
-| BRCA1_mut | 0.0000 | 602 |
-
-This is a **quantitative negative result for the mutation-only DDR hypothesis** in cell lines — consistent with published literature that transcriptomic and HRD-scar features outperform mutation panels.
 
 ### v1 vs v2 comparison
 
@@ -151,15 +118,13 @@ Outputs land in `results/poc/`:
 - `cv_metrics.csv` — 5-fold CV AUC for all three models
 - `feature_importance.csv` — top-30 SHAP features
 - `ddr_feature_rank.csv` — DDR panel feature ranks
-- `shap_summary.png` — top-15 bar plot
-- `poc_summary.txt` — full run log
+- `shap_summary.png`, `poc_summary.txt`
 
 ### Honest assessment
 
 - Predicting Olaparib sensitivity from mutations/CNVs alone is a **known hard problem**. Published pan-cancer mutation-only benchmarks land at 0.55–0.65 AUC; transcriptomic and HRD-scar predictors do better.
-- The v2 improvement over v1 comes primarily from copy-number segments and TISSUE_FACTOR — **not DDR mutations per se**.
+- The v2 improvement comes primarily from copy-number segments and TISSUE_FACTOR — **not DDR mutations per se**.
 - The Mann-Whitney test explicitly shows DDR mutations do **not** rank higher than background (p=0.844). This is a quantitative negative result, not a framing choice.
-- All numbers are real 5-fold CV output on held-out folds (committed in `results/poc/cv_metrics.csv`).
 
 ## My Role
 
