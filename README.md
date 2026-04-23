@@ -1,6 +1,6 @@
 # Project 3: ML Drug Response Prediction (GDSC)
 
-> **Branch status:** This repo currently has two active branches — `master` (this one) and `main` — that have diverged independently and now contain different Dockerfile, scripts, and README revisions. The content below describes the `master` variant. Treat either branch as authoritative only once they have been consolidated.
+[![CI](https://github.com/adamhoffman2155-hue/project-3-ml-classification/actions/workflows/ci.yml/badge.svg)](https://github.com/adamhoffman2155-hue/project-3-ml-classification/actions/workflows/ci.yml)
 
 **Research question:** Can genomic features predict drug sensitivity across cancer cell lines?
 
@@ -12,7 +12,7 @@ A reusable classical-ML + neural-net benchmarking harness for binarised drug-res
 
 1. **Data loading / cleaning** (`src/data.py`) — generic CSV feature + label loader, missing-value imputation, constant / highly-correlated feature removal, `DataPreprocessor` (standard scaling)
 2. **Feature engineering** (`src/features.py`) — mutation profile / CNV / pathway-score transformations
-3. **Classical models** (`src/models.py`) — Random Forest, XGBoost, ElasticNet with stratified 5-fold CV
+3. **Classical models** (`src/models.py`) — Logistic Regression, Random Forest, Gradient Boosting, and Elastic Net (via `SGDClassifier(penalty='elasticnet')`), all scikit-learn, with stratified 5-fold CV
 4. **Deep-learning baseline** (`src/neural_net.py`) — feed-forward network
 5. **Evaluation** (`src/evaluation.py`) — ROC-AUC, precision-recall, confusion matrices, SHAP-based feature importance
 
@@ -22,7 +22,7 @@ Data and labels are passed in as CSVs — the loader is dataset-agnostic. The pr
 
 | Category | Tools |
 |----------|-------|
-| Classical ML | Random Forest, XGBoost, ElasticNet (scikit-learn) |
+| Classical ML | Logistic Regression, Random Forest, Gradient Boosting, Elastic Net (via SGD) — all scikit-learn |
 | Deep learning | Feed-forward neural net |
 | Interpretability | SHAP |
 | Validation | Stratified 5-fold cross-validation |
@@ -45,7 +45,7 @@ project-3-ml-classification/
 │   ├── config.py
 │   ├── data.py              # Generic CSV loader + DataPreprocessor
 │   ├── features.py          # Feature engineering transforms
-│   ├── models.py            # RF / XGBoost / ElasticNet
+│   ├── models.py            # sklearn: LogReg / RandomForest / GradientBoosting / SGD-ElasticNet
 │   ├── neural_net.py        # FFN baseline
 │   ├── evaluation.py        # CV, metrics, SHAP
 │   └── utils.py
@@ -70,8 +70,18 @@ conda env create -f environment.yml && conda activate ml-classification
 #   or
 pip install -r requirements.txt
 
+# Generate the synthetic-GDSC fixture so tests + integration runs have data
+python scripts/generate_synthetic_gdsc.py
+
 pytest
 ```
+
+The synthetic fixture (`data/synthetic/features.csv`, `data/synthetic/labels.csv`)
+is a 200-cell-line × 50-feature matrix with three planted "driver" features and
+a balanced binary sensitivity label. `tests/test_integration.py` trains
+Logistic Regression, Random Forest, and Gradient Boosting end-to-end on it and
+asserts CV ROC-AUC > 0.6 — this is the repo's "it runs on a fresh clone"
+acceptance test.
 
 ## My Role
 

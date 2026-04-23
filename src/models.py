@@ -48,8 +48,8 @@ def _run_stratified_cv(model, X, y, cv_folds=5):
         "f1": make_scorer(f1_score, average="weighted", zero_division=0),
         "roc_auc": make_scorer(
             roc_auc_score,
+            response_method="predict_proba",
             multi_class="ovr",
-            needs_proba=True,
             average="weighted",
         ),
     }
@@ -92,7 +92,6 @@ def train_logistic_regression(X, y, cv_folds=5):
     model = LogisticRegression(
         max_iter=1000,
         solver="lbfgs",
-        multi_class="auto",
         random_state=42,
         n_jobs=-1,
     )
