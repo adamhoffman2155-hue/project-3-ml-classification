@@ -1,5 +1,7 @@
 # Project 3: ML Drug Response Prediction (GDSC)
 
+> **Branch status:** This repo currently has two active branches — `master` (this one) and `main` — that have diverged independently and now contain different Dockerfile, scripts, and README revisions. The content below describes the `master` variant. Treat either branch as authoritative only once they have been consolidated.
+
 **Research question:** Can genomic features predict drug sensitivity across cancer cell lines?
 
 This is the third project in a [computational biology portfolio](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio). After Projects 1–2 identified transcriptomic and immune signatures in GEA, this project asks whether those genomic features can actually predict drug response — moving from descriptive biology to predictive modeling framed around the GDSC2 pharmacogenomics dataset.
