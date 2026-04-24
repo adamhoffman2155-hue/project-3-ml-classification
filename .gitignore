@@ -1,7 +1,6 @@
 # Data files
 data/raw/
 data/processed/
-*.csv
 *.xlsx
 
 # Models
@@ -9,8 +8,9 @@ models/trained/*.pkl
 models/trained/*.pth
 models/predictions/
 
-# Results
-results/
+# Results (whitelist committed benchmark subdir; CSVs inside are fine)
+results/*
+!results/benchmark/
 
 # Logs
 logs/
