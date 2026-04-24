@@ -1,6 +1,9 @@
 # Project 3: ML Drug Response Prediction (GDSC)
 
-> **Branch status:** This repo currently has two active branches — `master` (this one) and `main` — that have diverged independently and now contain different Dockerfile, scripts, and README revisions. The content below describes the `master` variant. Treat either branch as authoritative only once they have been consolidated.
+![CI](https://github.com/adamhoffman2155-hue/project-3-ml-classification/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.11-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Repro](https://img.shields.io/badge/FAIR_DOME_CURE-11%2F14_%7C_5%2F7_%7C_4%2F4-brightgreen)
 
 **Research question:** Can genomic features predict drug sensitivity across cancer cell lines?
 
@@ -80,6 +83,33 @@ I chose the GDSC2 dataset and DDR/biomarker framing based on my thesis work, and
 ## Context in the Portfolio
 
 This is **Project 3 of 7**. It marks the transition from descriptive transcriptomics (Projects 1–2) to predictive modeling — asking whether the biology I identified can actually predict drug response. The pharmacogenomics approach here is extended in Project 4 with DDR-specific biomarkers (where the GDSC2 data is actually loaded and benchmarked). See the [portfolio site](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio) for the full narrative.
+
+### Cross-project data flow
+
+```
+Project 1 (bulk RNA-seq DEGs) ──┐
+                                │   (candidate features, narrative)
+                                ▼
+Project 3 (this one — broad ML harness)
+                                │   drug-response predictions
+                                ▼
+Project 4 (DDR-specific biomarkers + SHAP) ──▶ Project 6 (survival)
+```
+
+- **Upstream** — DEG / pathway matrices from Project-1 as candidate features (conceptual).
+- **Downstream** — Project-4 narrows the framing to the DDR biology and layers SHAP on top; Project-6 integrates the drug-response story into its survival covariate panel (narrative input).
+
+## Benchmarks
+
+| Benchmark | Output | Summary |
+| --- | --- | --- |
+| LogReg baseline vs sklearn GBM vs XGBoost | [`results/benchmark/leaderboard.md`](results/benchmark/leaderboard.md) | On a synthetic 500×30 binary task, GBM (0.923) and XGBoost (0.912) beat the LogReg baseline (0.816) by ~0.10 CV AUC — confirms the harness can report leaderboard-style numbers without running the full pipeline. |
+
+Rebuild with `python scripts/benchmark_models.py`.
+
+## Reproducibility
+
+See [`REPRODUCIBILITY.md`](REPRODUCIBILITY.md) for the FAIR-BioRS / DOME / CURE self-scorecard (11/14 · 5/7 · 4/4).
 
 ## License
 
