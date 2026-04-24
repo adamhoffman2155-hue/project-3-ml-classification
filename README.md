@@ -14,7 +14,7 @@ A reusable classical-ML + neural-net benchmarking harness for binarised drug-res
 2. **Feature engineering** (`src/features.py`) — mutation profile / CNV / pathway-score transformations
 3. **Classical models** (`src/models.py`) — Random Forest, XGBoost, ElasticNet with stratified 5-fold CV
 4. **Deep-learning baseline** (`src/neural_net.py`) — feed-forward network
-5. **Evaluation** (`src/evaluation.py`) — ROC-AUC, precision-recall, confusion matrices, SHAP-based feature importance
+5. **Evaluation** (`src/evaluation.py`) — ROC-AUC, precision-recall, confusion matrices, permutation/tree-based feature importance
 
 Data and labels are passed in as CSVs — the loader is dataset-agnostic. The project is framed around GDSC2 IC50 endpoints (with a focus on BRCA-pathway drugs relevant to the DDR biology from my thesis), but the actual harness runs on whatever feature / label CSVs are supplied.
 
@@ -24,7 +24,7 @@ Data and labels are passed in as CSVs — the loader is dataset-agnostic. The pr
 |----------|-------|
 | Classical ML | Random Forest, XGBoost, ElasticNet (scikit-learn) |
 | Deep learning | Feed-forward neural net |
-| Interpretability | SHAP |
+| Interpretability | Permutation importance, sklearn `feature_importances_` |
 | Validation | Stratified 5-fold cross-validation |
 | Intended data | GDSC2 pharmacogenomics (IC50 + genomic features) |
 | Visualization | matplotlib, seaborn |
@@ -47,7 +47,7 @@ project-3-ml-classification/
 │   ├── features.py          # Feature engineering transforms
 │   ├── models.py            # RF / XGBoost / ElasticNet
 │   ├── neural_net.py        # FFN baseline
-│   ├── evaluation.py        # CV, metrics, SHAP
+│   ├── evaluation.py        # CV, metrics, permutation importance
 │   └── utils.py
 └── tests/
     ├── test_data.py
@@ -75,7 +75,7 @@ pytest
 
 ## My Role
 
-I chose the GDSC2 dataset and DDR/biomarker framing based on my thesis work, and evaluated whether SHAP outputs matched expected biology for BRCA-pathway drugs. Implementation was heavily AI-assisted.
+I chose the GDSC2 dataset and DDR/biomarker framing based on my thesis work, and evaluated whether feature-importance outputs matched expected biology for BRCA-pathway drugs (SHAP-based biomarker ranking is handled in Project 4, which is where the `shap` dependency actually runs). Implementation was heavily AI-assisted.
 
 ## Context in the Portfolio
 
