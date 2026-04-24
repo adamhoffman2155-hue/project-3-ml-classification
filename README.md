@@ -5,6 +5,8 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Repro](https://img.shields.io/badge/FAIR_DOME_CURE-11%2F14_%7C_5%2F7_%7C_4%2F4-brightgreen)
 
+> **Branch status:** `main` holds the GDSC POC v2 (RandomForest CV AUC 0.711 ± 0.085, DDR quantitative null result, committed in `results/poc/`); this feature branch `claude/research-industry-standards-bQAWX` adds uniform polish (CI, pre-commit, sklearn 1.4 compat fix, REPRODUCIBILITY.md, LogReg/GBM/XGBoost benchmark, cross-project docs, SHAP-claim cleanup) on top of `master` (pre-POC). The intended path is to merge this feature branch's polish layer into `main` — the branches are additive, not independently authoritative.
+
 **Research question:** Can genomic features predict drug sensitivity across cancer cell lines?
 
 This is the third project in a [computational biology portfolio](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio). After Projects 1–2 identified transcriptomic and immune signatures in GEA, this project asks whether those genomic features can actually predict drug response — moving from descriptive biology to predictive modeling framed around the GDSC2 pharmacogenomics dataset.
