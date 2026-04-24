@@ -1,0 +1,16 @@
+classifier,fold,cv_auc
+LogisticRegression,1,0.7244
+LogisticRegression,2,0.8533
+LogisticRegression,3,0.7111
+LogisticRegression,4,0.6711
+LogisticRegression,5,0.7067
+RandomForest,1,0.7822
+RandomForest,2,0.8311
+RandomForest,3,0.6978
+RandomForest,4,0.6489
+RandomForest,5,0.7289
+GradientBoosting,1,0.7422
+GradientBoosting,2,0.8622
+GradientBoosting,3,0.8
+GradientBoosting,4,0.6667
+GradientBoosting,5,0.7689

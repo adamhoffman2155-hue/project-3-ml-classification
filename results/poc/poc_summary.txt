@@ -1,0 +1,19 @@
+POC: ML drug-response harness on synthetic-GDSC fixture
+============================================================
+
+Dataset: synthetic fixture from scripts/generate_synthetic_gdsc.py
+  200 cell lines x 50 features (20 mutation + 20 CNV + 10 expression)
+  Three planted driver features (MUT_GENE_0, CNV_GENE_1, EXPR_GENE_2)
+  Balanced binary sensitivity label
+
+Workflow: load -> StandardScaler -> StratifiedKFold(5) CV on train split
+
+5-fold CV ROC-AUC (on 150-cell-line train fold, 50 held out for test):
+  GradientBoosting    0.7680  +/- 0.0722
+  RandomForest        0.7378  +/- 0.0712
+  LogisticRegression  0.7333  +/- 0.0699
+
+Headline: GradientBoosting CV AUC 0.768 +/- 0.072
+
+Reproduce:
+  python scripts/poc/run_poc.py

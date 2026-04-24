@@ -1,0 +1,51 @@
+{
+  "$schema": "https://github.com/adamhoffman2155-hue/bioinformatics-portfolio/blob/main/shared/poc-manifest.schema.json",
+  "project": "project-3-ml-classification",
+  "poc_title": "ML drug-response harness on synthetic-GDSC fixture",
+  "poc_version": "v1",
+  "dataset": {
+    "name": "Synthetic GDSC fixture",
+    "source": "scripts/generate_synthetic_gdsc.py",
+    "substitute_for": "real GDSC v17 (not committed; out-of-repo)",
+    "n_cell_lines": 200,
+    "n_features": 50,
+    "n_planted_driver_features": 3
+  },
+  "script": "scripts/poc/run_poc.py",
+  "generated_at": "2026-04-24",
+  "headline_metric": {
+    "name": "GradientBoosting 5-fold CV ROC-AUC",
+    "value": 0.768,
+    "std": 0.072,
+    "n_train": 150,
+    "note": "StratifiedKFold(5, shuffle=True, random_state=42) on the 75% train fold; signal planted in 3 of 50 features"
+  },
+  "secondary_metrics": [
+    {
+      "name": "All classifiers 5-fold CV ROC-AUC",
+      "rows": [
+        {
+          "classifier": "GradientBoosting",
+          "cv_auc_mean": 0.768,
+          "cv_auc_std": 0.0722
+        },
+        {
+          "classifier": "RandomForest",
+          "cv_auc_mean": 0.7378,
+          "cv_auc_std": 0.0712
+        },
+        {
+          "classifier": "LogisticRegression",
+          "cv_auc_mean": 0.7333,
+          "cv_auc_std": 0.0699
+        }
+      ]
+    }
+  ],
+  "headline_text": "GradientBoosting CV ROC-AUC 0.768 \u00b1 0.072 on the committed synthetic fixture (150 train \u00d7 50 features); reproducible on any fresh clone.",
+  "artifacts": [
+    "results/poc/poc_summary.txt",
+    "results/poc/cv_auc.csv",
+    "results/poc/per_fold_auc.csv"
+  ]
+}

@@ -1,0 +1,4 @@
+classifier,cv_auc_mean,cv_auc_std,n_features,n_train
+GradientBoosting,0.768,0.0722,50,150
+RandomForest,0.7378,0.0712,50,150
+LogisticRegression,0.7333,0.0699,50,150
