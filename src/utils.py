@@ -2,9 +2,9 @@
 General utility functions.
 """
 
+import logging
 import os
 import random
-import logging
 
 import numpy as np
 
@@ -23,6 +23,7 @@ def set_random_seed(seed=42):
 
     try:
         import torch
+
         torch.manual_seed(seed)
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
@@ -51,9 +52,7 @@ def setup_logging(name, level=logging.INFO):
     logger = logging.getLogger(name)
     if not logger.handlers:
         handler = logging.StreamHandler()
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         handler.setFormatter(formatter)
         logger.addHandler(handler)
     logger.setLevel(level)

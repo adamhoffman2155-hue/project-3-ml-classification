@@ -6,12 +6,12 @@ import numpy as np
 import pytest
 
 from src.models import (
+    compare_models,
+    evaluate_model,
+    train_elastic_net,
+    train_gradient_boosting,
     train_logistic_regression,
     train_random_forest,
-    train_gradient_boosting,
-    train_elastic_net,
-    evaluate_model,
-    compare_models,
 )
 
 
