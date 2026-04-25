@@ -54,7 +54,8 @@ class ModelEvaluator:
 
         fig = plt.figure(figsize=self.figsize)
         sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
-                    xticklabels=class_names, yticklabels=class_names,
+                    xticklabels=class_names if class_names is not None else "auto",
+                    yticklabels=class_names if class_names is not None else "auto",
                     cbar_kws={"label": "Count"})
         plt.ylabel("True Label")
         plt.xlabel("Predicted Label")

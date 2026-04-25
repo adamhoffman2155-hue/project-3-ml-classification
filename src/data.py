@@ -11,7 +11,7 @@ from sklearn.preprocessing import LabelEncoder
 def load_genomic_data(feature_path, label_path=None, test_size=0.2, random_state=42):
     """
     Load genomic feature matrix and labels.
-    
+
     Parameters
     ----------
     feature_path : str
@@ -22,7 +22,7 @@ def load_genomic_data(feature_path, label_path=None, test_size=0.2, random_state
         Proportion for test set
     random_state : int
         Random seed
-    
+
     Returns
     -------
     X_train, X_test, y_train, y_test : np.ndarray
@@ -34,18 +34,18 @@ def load_genomic_data(feature_path, label_path=None, test_size=0.2, random_state
     X = pd.read_csv(feature_path, index_col=0)
     feature_names = X.columns.tolist()
     X = X.values
-    
+
     # Load labels if provided
     if label_path:
         y_df = pd.read_csv(label_path, index_col=0)
         y = y_df.iloc[:, 0].values
-        
+
         # Encode labels
         le = LabelEncoder()
         y = le.fit_transform(y)
     else:
         y = None
-    
+
     # Split data
     if y is not None:
         X_train, X_test, y_train, y_test = train_test_split(
@@ -56,43 +56,43 @@ def load_genomic_data(feature_path, label_path=None, test_size=0.2, random_state
         return X, feature_names
 
 
-def handle_missing_values(X, method='mean'):
+def handle_missing_values(X, method="mean"):
     """
     Handle missing values in feature matrix.
-    
+
     Parameters
     ----------
     X : np.ndarray or pd.DataFrame
         Feature matrix
     method : str
         'mean', 'median', or 'drop'
-    
+
     Returns
     -------
     X_clean : np.ndarray
         Cleaned feature matrix
     """
     if isinstance(X, pd.DataFrame):
-        if method == 'mean':
+        if method == "mean":
             X_clean = X.fillna(X.mean())
-        elif method == 'median':
+        elif method == "median":
             X_clean = X.fillna(X.median())
-        elif method == 'drop':
+        elif method == "drop":
             X_clean = X.dropna()
         else:
             raise ValueError(f"Unknown method: {method}")
         return X_clean.values
     else:
         # NumPy array
-        if method == 'mean':
+        if method == "mean":
             col_mean = np.nanmean(X, axis=0)
             inds = np.where(np.isnan(X))
             X[inds] = np.take(col_mean, inds[1])
-        elif method == 'median':
+        elif method == "median":
             col_median = np.nanmedian(X, axis=0)
             inds = np.where(np.isnan(X))
             X[inds] = np.take(col_median, inds[1])
-        elif method == 'drop':
+        elif method == "drop":
             X = X[~np.isnan(X).any(axis=1)]
         else:
             raise ValueError(f"Unknown method: {method}")
@@ -102,14 +102,14 @@ def handle_missing_values(X, method='mean'):
 def remove_constant_features(X, feature_names=None):
     """
     Remove features with zero variance.
-    
+
     Parameters
     ----------
     X : np.ndarray or pd.DataFrame
         Feature matrix
     feature_names : list, optional
         Feature names
-    
+
     Returns
     -------
     X_filtered : np.ndarray
@@ -119,11 +119,13 @@ def remove_constant_features(X, feature_names=None):
     """
     variances = np.var(X, axis=0)
     mask = variances > 0
-    
+
     X_filtered = X[:, mask] if isinstance(X, np.ndarray) else X.iloc[:, mask].values
-    
+
     if feature_names:
-        feature_names_filtered = [name for name, keep in zip(feature_names, mask) if keep]
+        feature_names_filtered = [
+            name for name, keep in zip(feature_names, mask, strict=False) if keep
+        ]
         return X_filtered, feature_names_filtered
     else:
         return X_filtered
@@ -132,7 +134,7 @@ def remove_constant_features(X, feature_names=None):
 def remove_highly_correlated_features(X, threshold=0.95, feature_names=None):
     """
     Remove highly correlated features.
-    
+
     Parameters
     ----------
     X : np.ndarray or pd.DataFrame
@@ -141,7 +143,7 @@ def remove_highly_correlated_features(X, threshold=0.95, feature_names=None):
         Correlation threshold
     feature_names : list, optional
         Feature names
-    
+
     Returns
     -------
     X_filtered : np.ndarray
@@ -151,20 +153,22 @@ def remove_highly_correlated_features(X, threshold=0.95, feature_names=None):
     """
     # Compute correlation matrix
     corr_matrix = np.corrcoef(X.T)
-    
+
     # Find highly correlated pairs
     to_drop = set()
     for i in range(len(corr_matrix)):
         for j in range(i + 1, len(corr_matrix)):
             if abs(corr_matrix[i, j]) > threshold:
                 to_drop.add(j)
-    
+
     # Keep features not in to_drop
     mask = np.array([i not in to_drop for i in range(X.shape[1])])
     X_filtered = X[:, mask] if isinstance(X, np.ndarray) else X.iloc[:, mask].values
-    
+
     if feature_names:
-        feature_names_filtered = [name for name, keep in zip(feature_names, mask) if keep]
+        feature_names_filtered = [
+            name for name, keep in zip(feature_names, mask, strict=False) if keep
+        ]
         return X_filtered, feature_names_filtered
     else:
         return X_filtered
@@ -174,7 +178,7 @@ class DataPreprocessor:
     """
     Complete data preprocessing pipeline.
     """
-    
+
     def __init__(self):
         self.means_ = None
         self.stds_ = None

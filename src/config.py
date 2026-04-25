@@ -3,8 +3,7 @@ Configuration management for model hyperparameters.
 """
 
 import os
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
 
 import yaml
 
@@ -20,7 +19,7 @@ class ModelConfig:
 
     # Random Forest
     rf_n_estimators: int = 200
-    rf_max_depth: Optional[int] = None
+    rf_max_depth: int | None = None
     rf_min_samples_split: int = 5
     rf_min_samples_leaf: int = 2
 
@@ -72,7 +71,7 @@ def load_config(yaml_path):
     if not os.path.isfile(yaml_path):
         raise FileNotFoundError(f"Config file not found: {yaml_path}")
 
-    with open(yaml_path, "r") as f:
+    with open(yaml_path) as f:
         raw = yaml.safe_load(f) or {}
 
     # Only pass keys that are valid ModelConfig fields

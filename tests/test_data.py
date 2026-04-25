@@ -5,7 +5,7 @@ Tests for data loading and preprocessing.
 import numpy as np
 import pytest
 
-from src.data import handle_missing_values, remove_constant_features, DataPreprocessor
+from src.data import DataPreprocessor, handle_missing_values, remove_constant_features
 
 
 class TestHandleMissingValues:

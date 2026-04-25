@@ -1,34 +1,38 @@
 # Project 3: ML Drug Response Prediction (GDSC)
 
-> **Branch status:** This repo currently has two active branches — `main` (this one) and `master` — that have diverged independently and now contain different Dockerfile, scripts, and README revisions. The content below describes the `main` variant. Treat either branch as authoritative only once they have been consolidated.
+![CI](https://github.com/adamhoffman2155-hue/project-3-ml-classification/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.11-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Repro](https://img.shields.io/badge/FAIR_DOME_CURE-11%2F14_%7C_5%2F7_%7C_4%2F4-brightgreen)
 
 **Research question:** Can genomic features predict drug sensitivity across cancer cell lines?
 
-This is the third project in a [computational biology portfolio](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio). After Projects 1–2 identified transcriptomic and immune signatures in GEA, this project asks whether those genomic features can actually predict drug response — moving from descriptive biology to predictive modeling using the GDSC2 pharmacogenomics dataset.
+This is the third project in a [computational biology portfolio](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio). After Projects 1–2 identified transcriptomic and immune signatures in GEA, this project asks whether those genomic features can actually predict drug response — moving from descriptive biology to predictive modeling framed around the GDSC2 pharmacogenomics dataset.
 
 ## What It Does
 
-Benchmarks multiple ML models on GDSC2 cell line data to predict IC50 drug sensitivity from genomic features:
+A reusable classical-ML + neural-net benchmarking harness for binarised drug-response prediction from genomic feature matrices:
 
-1. **Data loading** — GDSC2 IC50 values + genomic feature matrices
-2. **Feature engineering** — Mutation profiles, copy number, pathway scores
-3. **Model training** — Random Forest, XGBoost, ElasticNet with stratified 5-fold CV
-4. **Feature inspection** — SHAP values for model interpretability
-5. **Evaluation** — ROC-AUC, precision-recall, confusion matrices
-6. **Model comparison** — Benchmark across all approaches
+1. **Data loading / cleaning** (`src/data.py`) — generic CSV feature + label loader, missing-value imputation, constant / highly-correlated feature removal, `DataPreprocessor` (standard scaling)
+2. **Feature engineering** (`src/features.py`) — mutation profile / CNV / pathway-score transformations
+3. **Classical models** (`src/models.py`) — Random Forest, XGBoost, ElasticNet with stratified 5-fold CV
+4. **Deep-learning baseline** (`src/neural_net.py`) — feed-forward network
+5. **Evaluation** (`src/evaluation.py`) — ROC-AUC, precision-recall, confusion matrices, permutation/tree-based feature importance
 
-The pipeline explores which genomic features correlate with drug sensitivity, with particular focus on BRCA-pathway drugs relevant to the DDR biology from my thesis.
+Data and labels are passed in as CSVs — the loader is dataset-agnostic. The project is framed around GDSC2 IC50 endpoints (with a focus on BRCA-pathway drugs relevant to the DDR biology from my thesis), but the actual harness runs on whatever feature / label CSVs are supplied.
 
 ## Methods & Tools
 
 | Category | Tools |
 |----------|-------|
-| ML Models | Random Forest, XGBoost, ElasticNet (scikit-learn) |
-| Interpretability | SHAP |
+| Classical ML | Random Forest, XGBoost, ElasticNet (scikit-learn) |
+| Deep learning | Feed-forward neural net |
+| Interpretability | Permutation importance, sklearn `feature_importances_` |
 | Validation | Stratified 5-fold cross-validation |
-| Data | GDSC2 pharmacogenomics |
+| Intended data | GDSC2 pharmacogenomics (IC50 + genomic features) |
 | Visualization | matplotlib, seaborn |
-| Environment | Docker, Conda |
+| Testing | pytest (`test_data.py`, `test_features.py`, `test_models.py`) |
+| Environment | Docker, Conda, pip |
 
 ## Project Structure
 
@@ -43,23 +47,25 @@ project-3-ml-classification/
 ├── src/
 │   ├── __init__.py
 │   ├── config.py
-│   ├── data.py
-│   ├── evaluation.py
-│   ├── features.py
-│   ├── models.py
-│   ├── neural_net.py
+│   ├── data.py              # Generic CSV loader + DataPreprocessor
+│   ├── features.py          # Feature engineering transforms
+│   ├── models.py            # RF / XGBoost / ElasticNet
+│   ├── neural_net.py        # FFN baseline
+│   ├── evaluation.py        # CV, metrics, permutation importance
 │   └── utils.py
 ├── scripts/
+│   ├── benchmark_models.py  # LogReg vs GBM vs XGBoost benchmark
 │   └── poc/
-│       └── run_poc.py
+│       └── run_poc.py       # Proof-of-concept runner
 ├── tests/
-│   ├── __init__.py
 │   ├── test_data.py
 │   ├── test_features.py
 │   └── test_models.py
 └── results/
-    └── poc/
+    └── poc/                 # POC outputs (committed)
 ```
+
+Trained model artefacts, predictions, metrics, and plots are written under `data/`, `models/`, and `results/` at runtime and are gitignored.
 
 ## Quick Start
 
@@ -67,13 +73,14 @@ project-3-ml-classification/
 git clone https://github.com/adamhoffman2155-hue/project-3-ml-classification.git
 cd project-3-ml-classification
 
-# Using Docker
-docker build -t ml-classification .
-docker run -it -v $(pwd):/workspace ml-classification bash
+# Choose one environment
+docker build -t ml-classification . && docker run -it -v $(pwd):/workspace ml-classification bash
+#   or
+conda env create -f environment.yml && conda activate ml-classification
+#   or
+pip install -r requirements.txt
 
-# Or Conda
-conda env create -f environment.yml
-conda activate ml-classification
+pytest
 ```
 
 ## Proof of Concept
@@ -131,11 +138,38 @@ python scripts/poc/run_poc.py
 
 ## My Role
 
-I chose the GDSC2 dataset and DDR/biomarker framing based on my thesis work, and evaluated whether SHAP outputs matched expected biology for BRCA-pathway drugs. Implementation was heavily AI-assisted.
+I chose the GDSC2 dataset and DDR/biomarker framing based on my thesis work, and evaluated whether feature-importance outputs matched expected biology for BRCA-pathway drugs (SHAP-based biomarker ranking is handled in Project 4, which is where the `shap` dependency actually runs). Implementation was heavily AI-assisted.
 
 ## Context in the Portfolio
 
-This is **Project 3 of 7**. It marks the transition from descriptive transcriptomics (Projects 1–2) to predictive modeling — asking whether the biology I identified can actually predict drug response. The pharmacogenomics approach here is extended in Project 4 with DDR-specific biomarkers. See the [portfolio site](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio) for the full narrative.
+This is **Project 3 of 7**. It marks the transition from descriptive transcriptomics (Projects 1–2) to predictive modeling — asking whether the biology I identified can actually predict drug response. The pharmacogenomics approach here is extended in Project 4 with DDR-specific biomarkers (where the GDSC2 data is actually loaded and benchmarked). See the [portfolio site](https://github.com/adamhoffman2155-hue/bioinformatics-portfolio) for the full narrative.
+
+### Cross-project data flow
+
+```
+Project 1 (bulk RNA-seq DEGs) ──┐
+                                │   (candidate features, narrative)
+                                ▼
+Project 3 (this one — broad ML harness)
+                                │   drug-response predictions
+                                ▼
+Project 4 (DDR-specific biomarkers + SHAP) ──▶ Project 6 (survival)
+```
+
+- **Upstream** — DEG / pathway matrices from Project-1 as candidate features (conceptual).
+- **Downstream** — Project-4 narrows the framing to the DDR biology and layers SHAP on top; Project-6 integrates the drug-response story into its survival covariate panel (narrative input).
+
+## Benchmarks
+
+| Benchmark | Output | Summary |
+| --- | --- | --- |
+| LogReg baseline vs sklearn GBM vs XGBoost | [`results/benchmark/leaderboard.md`](results/benchmark/leaderboard.md) | On a synthetic 500×30 binary task, GBM (0.923) and XGBoost (0.912) beat the LogReg baseline (0.816) by ~0.10 CV AUC — confirms the harness can report leaderboard-style numbers without running the full pipeline. |
+
+Rebuild with `python scripts/benchmark_models.py`.
+
+## Reproducibility
+
+See [`REPRODUCIBILITY.md`](REPRODUCIBILITY.md) for the FAIR-BioRS / DOME / CURE self-scorecard (11/14 · 5/7 · 4/4).
 
 ## License
 

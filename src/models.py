@@ -4,17 +4,17 @@ Classical ML model wrappers for genomic classification.
 
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression, SGDClassifier
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.model_selection import StratifiedKFold, cross_validate
 from sklearn.metrics import (
     accuracy_score,
+    f1_score,
+    make_scorer,
     precision_score,
     recall_score,
-    f1_score,
     roc_auc_score,
-    make_scorer,
 )
+from sklearn.model_selection import StratifiedKFold, cross_validate
 
 
 def _run_stratified_cv(model, X, y, cv_folds=5):
@@ -49,14 +49,12 @@ def _run_stratified_cv(model, X, y, cv_folds=5):
         "roc_auc": make_scorer(
             roc_auc_score,
             multi_class="ovr",
-            needs_proba=True,
+            response_method="predict_proba",
             average="weighted",
         ),
     }
 
-    cv_results = cross_validate(
-        model, X, y, cv=cv, scoring=scoring, return_train_score=False
-    )
+    cv_results = cross_validate(model, X, y, cv=cv, scoring=scoring, return_train_score=False)
 
     metrics = {}
     for metric_name in scoring:
@@ -92,7 +90,6 @@ def train_logistic_regression(X, y, cv_folds=5):
     model = LogisticRegression(
         max_iter=1000,
         solver="lbfgs",
-        multi_class="auto",
         random_state=42,
         n_jobs=-1,
     )
