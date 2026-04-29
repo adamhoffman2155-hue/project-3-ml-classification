@@ -1,0 +1,42 @@
+{
+  "id": 3,
+  "title": "ML Drug Response Prediction (GDSC)",
+  "question": "Can genomic features predict drug sensitivity across cancer cell lines?",
+  "stack": ["scikit-learn (LogReg, RandomForest, GradientBoosting)", "SHAP", "stratified 5-fold CV", "matplotlib", "Docker"],
+  "dataset_target": "GDSC2 release 8.5 from CancerRxGene / Sanger Institute",
+  "dataset_actual_poc": "GDSC v17 snapshot bundled in the gdsctools PyPI package (988 cell lines, 270 mutations + 116 CN gains + 291 CN losses + tissue + MSI dummies)",
+  "substitution_reason": "cog.sanger.ac.uk release 8.5 hosts not reachable from sandbox; gdsctools v17 is the accessible bundle",
+  "status": "Runnable POC",
+  "reproduce_command": "pip install pandas numpy scipy scikit-learn shap matplotlib gdsctools && python scripts/poc/run_poc.py",
+  "outputs": [
+    "results/poc/cv_metrics.csv",
+    "results/poc/feature_importance.csv",
+    "results/poc/ddr_feature_rank.csv",
+    "results/poc/olaparib_cv_metrics.csv",
+    "results/poc/olaparib_shap_top.csv",
+    "results/poc/poc_summary.txt"
+  ],
+  "headline_result": {
+    "task": "Olaparib sensitivity (top vs bottom IC50 quartile) — binary classification",
+    "n_cell_lines": 424,
+    "class_balance": "212 sensitive / 212 resistant",
+    "n_features": 704,
+    "feature_breakdown": "270 mutation indicators + 116 CN gains + 291 CN losses + TISSUE_FACTOR + MSI_FACTOR",
+    "cv_auc_random_forest": "0.711 ± 0.085",
+    "cv_auc_gradient_boosting": "0.688 ± 0.082",
+    "cv_auc_logistic_regression": "0.621 ± 0.046",
+    "ddr_panel_hypothesis_test": "DDR mutations (7 / 26 panel genes available in v17) rank at median 400/704; Mann-Whitney U one-sided p = 0.844 — quantitative null result",
+    "v1_vs_v2_delta": "+12 AUC points from v1 (LogReg on 39 DDR genes, AUC 0.595) to v2 (RF on 704 features, AUC 0.711)",
+    "interpretation": "Improvement comes primarily from copy-number features and tissue context, NOT from DDR mutations per se. Confirms published mutation-only PARPi benchmarks (0.55–0.65 AUC range)."
+  },
+  "limitations": [
+    "Mutation-only features ignore expression and HRD-scar signatures (which typically outperform)",
+    "Pan-cancer pooled — not tissue-stratified for primary modeling, although tissue is included as a covariate",
+    "Top-/bottom-quartile binarization is arbitrary vs. clinical cutoffs",
+    "GDSC v17 retains only 7 of 26 intended DDR panel genes; full panel would be needed for a fair DDR-only test",
+    "Cell-line analysis only — no patient cohort validation"
+  ],
+  "feeds_into": ["project-4-ddr-biomarker-pipeline", "project-6-gea-survival-pipeline"],
+  "portfolio_position": "Project 3 of 7",
+  "role": "Dataset and DDR/biomarker framing from thesis; SHAP biology review; quantitative DDR-enrichment hypothesis test. Implementation AI-assisted."
+}
